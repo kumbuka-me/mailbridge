@@ -1,0 +1,43 @@
+---
+project_name: kumbuka
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - make plugins
+    - go generate ./pkg/icons
+
+builds:
+  - id: kumbuka-mailer
+    main: ./cmd/kumbuka-mailer/
+    binary: kumbuka-mailer
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X main.Version={{ .Tag }}
+      - -X main.Commit={{ .FullCommit }}
+
+dockers_v2:
+  - id: kumbuka-mailer
+    ids:
+      - kumbuka-mailer
+    labels:
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.description: "{{ .ProjectName }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.source: "https://github.com/kumbuka-me/kumbuka-mailer"
+      org.opencontainers.image.title: "{{ .ProjectName }}"
+      org.opencontainers.image.url: "https://github.com/kumbuka-me/kumbuka-mailer"
+      org.opencontainers.image.version: "{{ .Tag }}"
+    dockerfile: Dockerfile.goreleaser
+    images:
+      - ghcr.io/kumbuka-me/kumbuka-mailer
+    tags:
+      - "{{ .Tag }}"
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64

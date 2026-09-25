@@ -1,0 +1,5 @@
+.git
+kumbuka-mailer
+dist
+coverage.out
+.DS_Store

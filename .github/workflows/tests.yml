@@ -1,0 +1,22 @@
+---
+name: Unit Tests
+
+on:
+  workflow_call:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: gofmt -l . | tee /tmp/unformatted && test ! -s /tmp/unformatted
+      - run: go vet ./...
+      - run: go test -count=1 ./...
