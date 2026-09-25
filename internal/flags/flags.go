@@ -72,7 +72,7 @@ type Config struct {
 func Parse(args []string, version string) (Config, error) {
 	cfg := Config{}
 	tf := tinyflags.NewFlagSet("mailbridge", tinyflags.ContinueOnError)
-	tf.EnvPrefix("JSON2MAIL_")
+	tf.EnvPrefix("MAILBRIDGE_")
 	tf.Version(version)
 
 	listen := tf.TCPAddr(
@@ -117,10 +117,12 @@ func Parse(args []string, version string) (Config, error) {
 		}).
 		Placeholder("EMAIL").
 		Value()
-	tf.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP authentication username").Value()
+	tf.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP authentication username").
+		AllOrNone("smtp-auth").
+		Value()
 	tf.StringVar(&cfg.SMTPPassword, "smtp-password", "", "SMTP authentication password").
 		OverriddenValueMaskFn(tinyflags.MaskFirstLast).
-		Requires("smtp-username").
+		AllOrNone("smtp-auth").
 		Value()
 	tlsMode := tinyflags.Enum(
 		tf,

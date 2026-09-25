@@ -126,28 +126,28 @@ If Alice and Bob should receive independent emails, send two requests instead.
 
 ## Configuration
 
-Configuration uses `tinyflags`. Environment variables use the `JSON2MAIL__` prefix.
+Configuration uses `tinyflags`. Environment variables use the `MAILBRIDGE__` prefix.
 
-| Flag                          | Environment variable                   | Default          | Description                                                   |
-| ----------------------------- | -------------------------------------- | ---------------- | ------------------------------------------------------------- |
-| `--listen-address`            | `JSON2MAIL__LISTEN_ADDRESS`            | `127.0.0.1:8080` | HTTP listen address.                                          |
-| `--api-token`                 | `JSON2MAIL__API_TOKEN`                 | required         | Bearer token required by `POST /mail`.                        |
-| `--rate-limit`                | `JSON2MAIL__RATE_LIMIT`                | `0`              | Maximum mail requests per second; `0` disables rate limiting. |
-| `--smtp-address`              | `JSON2MAIL__SMTP_ADDRESS`              | required         | SMTP server as `HOST:PORT`.                                   |
-| `--smtp-from`                 | `JSON2MAIL__SMTP_FROM`                 | required         | Sender mailbox; a display name is allowed.                    |
-| `--smtp-username`             | `JSON2MAIL__SMTP_USERNAME`             | empty            | SMTP username.                                                |
-| `--smtp-password`             | `JSON2MAIL__SMTP_PASSWORD`             | empty            | SMTP password.                                                |
-| `--smtp-tls`                  | `JSON2MAIL__SMTP_TLS`                  | `starttls`       | `starttls`, `tls`, or `none`.                                 |
-| `--smtp-insecure-skip-verify` | `JSON2MAIL__SMTP_INSECURE_SKIP_VERIFY` | `false`          | Disable SMTP TLS certificate verification.                    |
-| `--smtp-timeout`              | `JSON2MAIL__SMTP_TIMEOUT`              | `30s`            | Timeout for each SMTP delivery attempt.                       |
-| `--smtp-retry-count`          | `JSON2MAIL__SMTP_RETRY_COUNT`          | `3`              | Retries after the initial SMTP attempt.                       |
-| `--smtp-retry-backoff`        | `JSON2MAIL__SMTP_RETRY_BACKOFF`        | `1s`             | Delay before the first SMTP retry.                            |
-| `--smtp-retry-max-backoff`    | `JSON2MAIL__SMTP_RETRY_MAX_BACKOFF`    | `30s`            | Maximum local exponential retry backoff.                      |
-| `--smtp-retry-jitter`         | `JSON2MAIL__SMTP_RETRY_JITTER`         | `true`           | Apply full jitter to retry delays.                            |
-| `--body-format`               | `JSON2MAIL__BODY_FORMAT`               | `text`           | Default email body format: `text` or `html`.                  |
-| `--log-format`                | `JSON2MAIL__LOG_FORMAT`                | `json`           | `json` or `text`.                                             |
-| `--debug`                     | `JSON2MAIL__DEBUG`                     | `false`          | Enable debug logging, including retry waits.                  |
-| `--access-log`                | `JSON2MAIL__ACCESS_LOG`                | `false`          | Log HTTP requests.                                            |
+| Flag                          | Environment variable                    | Default          | Description                                                   |
+| ----------------------------- | --------------------------------------- | ---------------- | ------------------------------------------------------------- |
+| `--listen-address`            | `MAILBRIDGE__LISTEN_ADDRESS`            | `127.0.0.1:8080` | HTTP listen address.                                          |
+| `--api-token`                 | `MAILBRIDGE__API_TOKEN`                 | required         | Bearer token required by `POST /mail`.                        |
+| `--rate-limit`                | `MAILBRIDGE__RATE_LIMIT`                | `0`              | Maximum mail requests per second; `0` disables rate limiting. |
+| `--smtp-address`              | `MAILBRIDGE__SMTP_ADDRESS`              | required         | SMTP server as `HOST:PORT`.                                   |
+| `--smtp-from`                 | `MAILBRIDGE__SMTP_FROM`                 | required         | Sender mailbox; a display name is allowed.                    |
+| `--smtp-username`             | `MAILBRIDGE__SMTP_USERNAME`             | empty            | SMTP username.                                                |
+| `--smtp-password`             | `MAILBRIDGE__SMTP_PASSWORD`             | empty            | SMTP password.                                                |
+| `--smtp-tls`                  | `MAILBRIDGE__SMTP_TLS`                  | `starttls`       | `starttls`, `tls`, or `none`.                                 |
+| `--smtp-insecure-skip-verify` | `MAILBRIDGE__SMTP_INSECURE_SKIP_VERIFY` | `false`          | Disable SMTP TLS certificate verification.                    |
+| `--smtp-timeout`              | `MAILBRIDGE__SMTP_TIMEOUT`              | `30s`            | Timeout for each SMTP delivery attempt.                       |
+| `--smtp-retry-count`          | `MAILBRIDGE__SMTP_RETRY_COUNT`          | `3`              | Retries after the initial SMTP attempt.                       |
+| `--smtp-retry-backoff`        | `MAILBRIDGE__SMTP_RETRY_BACKOFF`        | `1s`             | Delay before the first SMTP retry.                            |
+| `--smtp-retry-max-backoff`    | `MAILBRIDGE__SMTP_RETRY_MAX_BACKOFF`    | `30s`            | Maximum local exponential retry backoff.                      |
+| `--smtp-retry-jitter`         | `MAILBRIDGE__SMTP_RETRY_JITTER`         | `true`           | Apply full jitter to retry delays.                            |
+| `--body-format`               | `MAILBRIDGE__BODY_FORMAT`               | `text`           | Default email body format: `text` or `html`.                  |
+| `--log-format`                | `MAILBRIDGE__LOG_FORMAT`                | `json`           | `json` or `text`.                                             |
+| `--debug`                     | `MAILBRIDGE__DEBUG`                     | `false`          | Enable debug logging, including retry waits.                  |
+| `--access-log`                | `MAILBRIDGE__ACCESS_LOG`                | `false`          | Log HTTP requests.                                            |
 
 SMTP authentication is disabled when both username and password are empty. If one is supplied, both are required.
 
@@ -165,7 +165,7 @@ To make HTML the deployment-wide default:
 --body-format html
 ```
 
-or set `JSON2MAIL__BODY_FORMAT=html`. The resulting MIME type is `text/plain; charset=utf-8` for `text` and `text/html; charset=utf-8` for `html`.
+or set `MAILBRIDGE__BODY_FORMAT=html`. The resulting MIME type is `text/plain; charset=utf-8` for `text` and `text/html; charset=utf-8` for `html`.
 
 ### SMTP proxy
 
@@ -221,16 +221,16 @@ mailbridge \
 ## Send a test email
 
 ```sh
-export JSON2MAIL__LISTEN_ADDRESS=127.0.0.1:8080
-export JSON2MAIL__API_TOKEN='change-me'
+export MAILBRIDGE__LISTEN_ADDRESS=127.0.0.1:8080
+export MAILBRIDGE__API_TOKEN='change-me'
 export TEST_EMAIL='alice@example.com'
 ```
 
 ```sh
 curl --fail-with-body \
   --request POST \
-  --url "http://${JSON2MAIL__LISTEN_ADDRESS}/mail" \
-  --header "Authorization: Bearer ${JSON2MAIL__API_TOKEN}" \
+  --url "http://${MAILBRIDGE__LISTEN_ADDRESS}/mail" \
+  --header "Authorization: Bearer ${MAILBRIDGE__API_TOKEN}" \
   --header 'Content-Type: application/json' \
   --data @- <<JSON
 {
