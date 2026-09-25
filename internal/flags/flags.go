@@ -72,7 +72,7 @@ type Config struct {
 func Parse(args []string, version string) (Config, error) {
 	cfg := Config{}
 	tf := tinyflags.NewFlagSet("mailbridge", tinyflags.ContinueOnError)
-	tf.EnvPrefix("MAILBRIDGE_")
+	tf.EnvPrefix("JSON2MAIL_")
 	tf.Version(version)
 
 	listen := tf.TCPAddr(
@@ -95,12 +95,6 @@ func Parse(args []string, version string) (Config, error) {
 			if _, _, err := net.SplitHostPort(s); err != nil {
 				return errors.New("smtp address must use HOST:PORT form")
 			}
-
-			from := strings.TrimSpace(cfg.SMTPFrom)
-			address, err := mail.ParseAddress(from)
-			if err != nil || address.Address == "" {
-				return errors.New("smtp from address is invalid")
-			}
 			return nil
 		}).
 		Finalize(func(s string) string {
@@ -110,6 +104,17 @@ func Parse(args []string, version string) (Config, error) {
 		Value()
 	tf.StringVar(&cfg.SMTPFrom, "smtp-from", "", "Sender email address").
 		Required().
+		Validate(func(s string) error {
+			from := strings.TrimSpace(s)
+			address, err := mail.ParseAddress(from)
+			if err != nil || address.Address == "" {
+				return errors.New("smtp from address is invalid")
+			}
+			return nil
+		}).
+		Finalize(func(s string) string {
+			return strings.TrimSpace(s)
+		}).
 		Placeholder("EMAIL").
 		Value()
 	tf.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP authentication username").Value()
