@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 	"uuid"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,20 @@ func (s *senderStub) Send(_ context.Context, message Message) error {
 	return s.err
 }
 
+// deliveryMetricsStub records completed delivery observations.
+type deliveryMetricsStub struct {
+	calls    int
+	duration time.Duration
+	err      error
+}
+
+// ObserveEmailDelivery records one completed SMTP delivery result.
+func (s *deliveryMetricsStub) ObserveEmailDelivery(duration time.Duration, err error) {
+	s.calls++
+	s.duration = duration
+	s.err = err
+}
+
 func TestForward(t *testing.T) {
 	t.Parallel()
 
@@ -38,7 +53,7 @@ func TestForward(t *testing.T) {
 			Message: Content{Subject: "Page updated", Body: "A watched page changed."},
 		}
 
-		require.NoError(t, NewForwarder(sender, BodyFormatText).Forward(context.Background(), request))
+		require.NoError(t, NewForwarder(sender, BodyFormatText, nil).Forward(context.Background(), request))
 		assert.NotEqual(t, uuid.Nil(), sender.message.ID)
 		assert.Equal(t, byte(7), sender.message.ID[6]>>4)
 		require.Len(t, sender.message.To, 2)
@@ -60,7 +75,7 @@ func TestForward(t *testing.T) {
 		request := validRequest()
 		request.Message.Body = "<p>Changed</p>"
 
-		require.NoError(t, NewForwarder(sender, BodyFormatHTML).Forward(context.Background(), request))
+		require.NoError(t, NewForwarder(sender, BodyFormatHTML, nil).Forward(context.Background(), request))
 		assert.Equal(t, BodyFormatHTML, sender.message.BodyFormat)
 		assert.Equal(t, "<p>Changed</p>", sender.message.Body)
 	})
@@ -72,7 +87,7 @@ func TestForward(t *testing.T) {
 		request := validRequest()
 		request.Message.BodyFormat = BodyFormatHTML
 
-		require.NoError(t, NewForwarder(sender, BodyFormatText).Forward(context.Background(), request))
+		require.NoError(t, NewForwarder(sender, BodyFormatText, nil).Forward(context.Background(), request))
 		assert.Equal(t, BodyFormatHTML, sender.message.BodyFormat)
 	})
 
@@ -83,7 +98,7 @@ func TestForward(t *testing.T) {
 		request := validRequest()
 		request.Message.BodyFormat = BodyFormatText
 
-		require.NoError(t, NewForwarder(sender, BodyFormatHTML).Forward(context.Background(), request))
+		require.NoError(t, NewForwarder(sender, BodyFormatHTML, nil).Forward(context.Background(), request))
 		assert.Equal(t, BodyFormatText, sender.message.BodyFormat)
 	})
 
@@ -91,9 +106,30 @@ func TestForward(t *testing.T) {
 		t.Parallel()
 
 		sender := &senderStub{}
-		require.NoError(t, NewForwarder(sender, "").Forward(context.Background(), validRequest()))
+		require.NoError(t, NewForwarder(sender, "", nil).Forward(context.Background(), validRequest()))
 		assert.Equal(t, BodyFormatText, sender.message.BodyFormat)
 	})
+}
+
+func TestForwardObservesDelivery(t *testing.T) {
+	t.Parallel()
+
+	metrics := &deliveryMetricsStub{}
+	sender := &senderStub{}
+
+	require.NoError(t, NewForwarder(sender, BodyFormatText, metrics).Forward(context.Background(), validRequest()))
+	assert.Equal(t, 1, metrics.calls)
+	assert.GreaterOrEqual(t, metrics.duration, time.Duration(0))
+	assert.NoError(t, metrics.err)
+}
+
+func TestForwardDoesNotObserveInvalidRequest(t *testing.T) {
+	t.Parallel()
+
+	metrics := &deliveryMetricsStub{}
+	err := NewForwarder(&senderStub{}, BodyFormatText, metrics).Forward(context.Background(), Request{})
+	require.ErrorIs(t, err, ErrInvalidRequest)
+	assert.Zero(t, metrics.calls)
 }
 
 func TestForwardPropagatesSenderFailure(t *testing.T) {
@@ -101,9 +137,12 @@ func TestForwardPropagatesSenderFailure(t *testing.T) {
 
 	failure := errors.New("smtp unavailable")
 	sender := &senderStub{err: failure}
+	metrics := &deliveryMetricsStub{}
 
-	err := NewForwarder(sender, BodyFormatText).Forward(context.Background(), validRequest())
+	err := NewForwarder(sender, BodyFormatText, metrics).Forward(context.Background(), validRequest())
 	require.ErrorIs(t, err, failure)
+	assert.Equal(t, 1, metrics.calls)
+	assert.ErrorIs(t, metrics.err, failure)
 }
 
 func TestValidateRequest(t *testing.T) {

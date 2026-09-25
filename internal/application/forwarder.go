@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/mail"
 	"strings"
+	"time"
 	"uuid"
 )
 
@@ -82,20 +83,27 @@ type Sender interface {
 	Send(context.Context, Message) error
 }
 
+// DeliveryMetrics records completed email delivery operations.
+type DeliveryMetrics interface {
+	ObserveEmailDelivery(time.Duration, error)
+}
+
 // Forwarder validates API requests and forwards them as email.
 type Forwarder struct {
 	// sender delivers prepared messages.
 	sender Sender
 	// defaultBodyFormat is used when a request does not provide an override.
 	defaultBodyFormat BodyFormat
+	// metrics records completed SMTP delivery operations.
+	metrics DeliveryMetrics
 }
 
 // NewForwarder constructs a mail forwarding service.
-func NewForwarder(sender Sender, defaultBodyFormat BodyFormat) *Forwarder {
+func NewForwarder(sender Sender, defaultBodyFormat BodyFormat, metrics DeliveryMetrics) *Forwarder {
 	if !ValidBodyFormat(defaultBodyFormat) {
 		defaultBodyFormat = BodyFormatText
 	}
-	return &Forwarder{sender: sender, defaultBodyFormat: defaultBodyFormat}
+	return &Forwarder{sender: sender, defaultBodyFormat: defaultBodyFormat, metrics: metrics}
 }
 
 // Forward validates an incoming request and sends exactly one email message.
@@ -107,7 +115,8 @@ func (f *Forwarder) Forward(ctx context.Context, request Request) error {
 		return errors.New("email sender is not configured")
 	}
 
-	return f.sender.Send(ctx, Message{
+	started := time.Now()
+	err := f.sender.Send(ctx, Message{
 		ID:         uuid.NewV7(),
 		To:         addresses(request.Recipients.To),
 		CC:         addresses(request.Recipients.CC),
@@ -116,6 +125,10 @@ func (f *Forwarder) Forward(ctx context.Context, request Request) error {
 		Body:       request.Message.Body,
 		BodyFormat: resolveBodyFormat(request.Message.BodyFormat, f.defaultBodyFormat),
 	})
+	if f.metrics != nil {
+		f.metrics.ObserveEmailDelivery(time.Since(started), err)
+	}
+	return err
 }
 
 // ValidateRequest reports malformed or unsupported mail requests.

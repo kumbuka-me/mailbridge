@@ -11,6 +11,7 @@ import (
 	"github.com/containeroo/mailbridge/internal/delivery"
 	"github.com/containeroo/mailbridge/internal/flags"
 	"github.com/containeroo/mailbridge/internal/logging"
+	appmetrics "github.com/containeroo/mailbridge/internal/metrics"
 	mailserver "github.com/containeroo/mailbridge/internal/server"
 	"github.com/containeroo/notifykit/notify"
 	"github.com/containeroo/notifykit/targets/email"
@@ -44,6 +45,8 @@ func Run(ctx context.Context, args []string, version, commit string, stdout, std
 			"overrides", cfg.Overrides,
 		)
 	}
+
+	metricsRegistry := appmetrics.NewRegistry(version, commit)
 
 	sender, err := delivery.New(
 		delivery.Config{
@@ -81,7 +84,7 @@ func Run(ctx context.Context, args []string, version, commit string, stdout, std
 		)
 	}
 
-	forwarder := application.NewForwarder(sender, cfg.BodyFormat)
+	forwarder := application.NewForwarder(sender, cfg.BodyFormat, metricsRegistry)
 	handler := mailserver.New(mailserver.Config{
 		Version:   version,
 		Forwarder: forwarder,
@@ -89,6 +92,7 @@ func Run(ctx context.Context, args []string, version, commit string, stdout, std
 		Logger:    logger.With("component", "server"),
 		AccessLog: cfg.AccessLog,
 		RateLimit: cfg.RateLimit,
+		Metrics:   metricsRegistry,
 	})
 
 	ctx, stop := server.SignalContext(ctx)

@@ -59,13 +59,13 @@ func TestRateLimitMustNotBeNegative(t *testing.T) {
 }
 
 func TestEnvironment(t *testing.T) {
-	t.Setenv("JSON2MAIL__API_TOKEN", "secret")
-	t.Setenv("JSON2MAIL__SMTP_ADDRESS", "smtp.example.com:465")
-	t.Setenv("JSON2MAIL__SMTP_FROM", "mailbridge@example.com")
-	t.Setenv("JSON2MAIL__SMTP_TLS", "tls")
-	t.Setenv("JSON2MAIL__SMTP_RETRY_COUNT", "5")
-	t.Setenv("JSON2MAIL__SMTP_RETRY_BACKOFF", "2s")
-	t.Setenv("JSON2MAIL__BODY_FORMAT", "html")
+	t.Setenv("MAILBRIDGE__API_TOKEN", "secret")
+	t.Setenv("MAILBRIDGE__SMTP_ADDRESS", "smtp.example.com:465")
+	t.Setenv("MAILBRIDGE__SMTP_FROM", "mailbridge@example.com")
+	t.Setenv("MAILBRIDGE__SMTP_TLS", "tls")
+	t.Setenv("MAILBRIDGE__SMTP_RETRY_COUNT", "5")
+	t.Setenv("MAILBRIDGE__SMTP_RETRY_BACKOFF", "2s")
+	t.Setenv("MAILBRIDGE__BODY_FORMAT", "html")
 	cfg, err := Parse(nil, "test")
 
 	require.NoError(t, err)

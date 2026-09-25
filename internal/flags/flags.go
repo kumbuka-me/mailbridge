@@ -72,7 +72,7 @@ type Config struct {
 func Parse(args []string, version string) (Config, error) {
 	cfg := Config{}
 	tf := tinyflags.NewFlagSet("mailbridge", tinyflags.ContinueOnError)
-	tf.EnvPrefix("JSON2MAIL_")
+	tf.EnvPrefix("MAILBRIDGE_")
 	tf.Version(version)
 
 	listen := tf.TCPAddr(

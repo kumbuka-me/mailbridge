@@ -89,6 +89,25 @@ The health endpoint is unauthenticated and returns `200 OK`:
 { "status": "ok" }
 ```
 
+### `GET /metrics`
+
+The Prometheus endpoint is unauthenticated and returns metrics in the Prometheus text exposition format. mailbridge uses a private registry, so only its explicitly registered application, Go runtime, and process collectors are exposed.
+
+## Metrics
+
+mailbridge exposes these application metrics in addition to the standard Go runtime and process collectors:
+
+| Metric                                       | Type      | Description                                            |
+| -------------------------------------------- | --------- | ------------------------------------------------------ |
+| `mailbridge_build_info`                      | gauge     | Build identity labeled by `version` and `commit`.      |
+| `mailbridge_mail_requests_total`             | counter   | Completed `POST /mail` requests by response `code`.    |
+| `mailbridge_mail_request_duration_seconds`   | histogram | Complete `POST /mail` request duration.                |
+| `mailbridge_email_deliveries_total`          | counter   | Completed email delivery operations.                   |
+| `mailbridge_email_delivery_errors_total`     | counter   | Email delivery operations that finished with an error. |
+| `mailbridge_email_delivery_duration_seconds` | histogram | Complete email delivery operation duration.            |
+
+Only `POST /mail` is instrumented at the HTTP layer. Infrastructure endpoints such as `/metrics`, `/healthz`, `/readyz`, and `/version` do not contribute to mail request metrics. Delivery metrics are recorded only after request validation succeeds and the SMTP delivery operation is attempted.
+
 ## Email semantics
 
 A single request produces one email message.
@@ -247,7 +266,7 @@ make lint
 make build
 ```
 
-The entry point only calls `app.Run`. `internal/app` owns process composition, `internal/application` owns request validation and conversion into one email message, `internal/delivery` adapts application messages to Notifykit, `internal/handler` owns endpoint behavior, `internal/middleware` owns cross-cutting HTTP concerns, and `internal/server` owns route construction. Notifykit owns SMTP, TLS, MIME rendering, proxy tunneling, retry classification, and delivery logging.
+The entry point only calls `app.Run`. `internal/app` owns process composition, `internal/application` owns request validation and conversion into one email message, `internal/delivery` adapts application messages to Notifykit, `internal/handler` owns endpoint behavior, `internal/metrics` owns the private Prometheus registry and observations, `internal/middleware` owns mail request instrumentation and other cross-cutting HTTP concerns, and `internal/server` owns route construction. Notifykit owns SMTP, TLS, MIME rendering, proxy tunneling, retry classification, and delivery logging.
 
 ## Message identity
 

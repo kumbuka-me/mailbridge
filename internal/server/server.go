@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/containeroo/mailbridge/internal/handler"
+	appmetrics "github.com/containeroo/mailbridge/internal/metrics"
 	"github.com/containeroo/mailbridge/internal/middleware"
 )
 
@@ -23,6 +24,8 @@ type Config struct {
 	AccessLog bool
 	// RateLimit limits authenticated mail requests per second; zero disables limiting.
 	RateLimit int
+	// Metrics exposes Prometheus metrics and records mail endpoint requests.
+	Metrics *appmetrics.Registry
 }
 
 // New constructs the fully routed HTTP application.
