@@ -1,0 +1,23 @@
+name: mailbridge
+
+services:
+  mailbridge:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${MAILBRIDGE__BUILD_VERSION:-dev}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      MAILBRIDGE__API_TOKEN: # openssl rand -base64 32
+      MAILBRIDGE__SMTP_ADDRESS:
+      MAILBRIDGE__SMTP_FROM:
+      MAILBRIDGE__SMTP_USERNAME:
+      MAILBRIDGE__SMTP_PASSWORD:
+      MAILBRIDGE__SMTP_TLS: # tls |  starttls | none
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
