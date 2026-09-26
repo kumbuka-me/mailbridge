@@ -5,7 +5,7 @@ go 1.27.0
 require (
 	github.com/containeroo/httpgrace v0.2.0
 	github.com/containeroo/notifykit v0.7.0
-	github.com/containeroo/tinyflags v0.0.86
+	github.com/containeroo/tinyflags v0.0.87
 	github.com/prometheus/client_golang v1.24.1
 	github.com/stretchr/testify v1.12.1
 )
