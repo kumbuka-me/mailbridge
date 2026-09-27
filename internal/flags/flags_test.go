@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/containeroo/mailbridge/internal/application"
+	"github.com/kumbuka-me/mailbridge/internal/application"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

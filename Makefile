@@ -18,10 +18,14 @@ include bin/dev-tools.mk
 include $(call dev-tools-module,tag)
 include $(call dev-tools-module,help)
 
-
 ## Project Tools
 
 GOLANGCI_LINT := bin/golangci-lint
+FAVICON_GENERATE := $(DEV_TOOLS_BIN)/favicon-generate
+SVG_TO_PNG := $(DEV_TOOLS_BIN)/svg-to-png
+
+LOGO_PNG ?= web/src/mailbridge.png
+LOGO_PNG_WIDTH ?= 128
 
 
 ## Formatting
@@ -35,6 +39,13 @@ PRETTIER_YAML_SOURCES := \
 	.goreleaser.yaml \
 	".github/**/*.{yml,yaml}"
 
+
+## Assets
+
+FAVICON_SOURCE ?= web/src/favicon.svg
+FAVICON_OUTPUT ?= web/src
+FAVICON_SIZES ?= 16x16 32x32
+LOGO_SOURCE ?= web/src/favicon.svg
 
 ## Build Configuration
 
@@ -137,11 +148,26 @@ lint-md: ## Check Markdown formatting.
 lint-yaml: ## Check YAML formatting.
 	@$(PRETTIER) --check $(PRETTIER_YAML_SOURCES)
 
+##@ Assets
+
+.PHONY: favicon
+favicon: $(FAVICON_GENERATE) $(FAVICON_SOURCE) ## Generate PNG favicons from the canonical SVG.
+	$(call run-tool,$(FAVICON_GENERATE),--apple-touch "$(FAVICON_SOURCE)" "$(FAVICON_OUTPUT)" $(FAVICON_SIZES))
+
+.PHONY: logo-png
+logo-png: $(SVG_TO_PNG) $(LOGO_SOURCE) ## Generate a PNG version of the Kumbuka logo.
+	$(call run-tool,$(SVG_TO_PNG),--width "$(LOGO_PNG_WIDTH)" "$(LOGO_SOURCE)" "$(LOGO_PNG)")
 
 ##@ Dependencies
 
 .PHONY: dev-tools
 dev-tools: $(DEV_TAG) $(MAKE_HELP) $(GO_INSTALL_TOOL) ## Download the pinned shared development tools.
+
+$(FAVICON_GENERATE): | $(DEV_TOOLS_BIN)
+	$(call download-dev-tool,favicon-generate,$@)
+
+$(SVG_TO_PNG): | $(DEV_TOOLS_BIN)
+	$(call download-dev-tool,svg-to-png,$@)
 
 .PHONY: golangci-lint
 golangci-lint: $(GO_INSTALL_TOOL) ## Download the pinned golangci-lint version.

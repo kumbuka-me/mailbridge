@@ -3,8 +3,8 @@ package app
 import (
 	"testing"
 
-	"github.com/containeroo/mailbridge/internal/flags"
 	"github.com/containeroo/notifykit/targets/email"
+	"github.com/kumbuka-me/mailbridge/internal/flags"
 	"github.com/stretchr/testify/assert"
 )
 

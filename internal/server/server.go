@@ -2,12 +2,13 @@
 package server
 
 import (
+	"io/fs"
 	"log/slog"
 	"net/http"
 
-	"github.com/containeroo/mailbridge/internal/handler"
-	appmetrics "github.com/containeroo/mailbridge/internal/metrics"
-	"github.com/containeroo/mailbridge/internal/middleware"
+	"github.com/kumbuka-me/mailbridge/internal/handler"
+	appmetrics "github.com/kumbuka-me/mailbridge/internal/metrics"
+	"github.com/kumbuka-me/mailbridge/internal/middleware"
 )
 
 // Config groups the capabilities used to construct HTTP routes.
@@ -16,6 +17,8 @@ type Config struct {
 	Version string
 	// Commit is the running build commit.
 	Commit string
+	// Assets contains the embedded web application assets served by HTTP endpoints.
+	Assets fs.FS
 	// BodyFormat is the default email body format shown on the home page.
 	BodyFormat string
 	// SMTPTLS is the SMTP TLS mode shown on the home page.

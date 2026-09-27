@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/containeroo/mailbridge/internal/response"
+	"github.com/kumbuka-me/mailbridge/internal/response"
 )
 
 // BearerToken requires the configured bearer token for a request.

@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
-	"github.com/containeroo/mailbridge/internal/handler"
-	"github.com/containeroo/mailbridge/internal/middleware"
+	"github.com/kumbuka-me/mailbridge/internal/handler"
+	"github.com/kumbuka-me/mailbridge/internal/middleware"
 )
 
 // addRoutes registers mailbridge's complete HTTP surface.
@@ -12,12 +12,14 @@ func addRoutes(mux *http.ServeMux, config Config) {
 	mux.Handle("GET /{$}", handler.Home(handler.HomeConfig{
 		Version:        config.Version,
 		Commit:         config.Commit,
+		Assets:         config.Assets,
 		BodyFormat:     config.BodyFormat,
 		SMTPTLS:        config.SMTPTLS,
 		SMTPRetryCount: config.SMTPRetryCount,
 		RateLimit:      config.RateLimit,
 		AccessLog:      config.AccessLog,
 	}))
+	mux.Handle("GET /assets/", handler.Assets(config.Assets))
 	mux.Handle("GET /metrics", config.Metrics.Metrics())
 	mux.Handle("GET /healthz", handler.Health())
 	mux.Handle("POST /healthz", handler.Health())

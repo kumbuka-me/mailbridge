@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/containeroo/mailbridge/internal/application"
 	"github.com/containeroo/notifykit/notify"
 	"github.com/containeroo/notifykit/targets/email"
 	"github.com/containeroo/notifykit/templates"
+	"github.com/kumbuka-me/mailbridge/internal/application"
 )
 
 const receiverID notify.ReceiverID = "smtp"

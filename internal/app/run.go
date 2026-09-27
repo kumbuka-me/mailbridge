@@ -5,21 +5,28 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 
 	"github.com/containeroo/httpgrace/server"
-	"github.com/containeroo/mailbridge/internal/application"
-	"github.com/containeroo/mailbridge/internal/delivery"
-	"github.com/containeroo/mailbridge/internal/flags"
-	"github.com/containeroo/mailbridge/internal/logging"
-	appmetrics "github.com/containeroo/mailbridge/internal/metrics"
-	mailserver "github.com/containeroo/mailbridge/internal/server"
 	"github.com/containeroo/notifykit/notify"
 	"github.com/containeroo/notifykit/targets/email"
 	"github.com/containeroo/tinyflags"
+	"github.com/kumbuka-me/mailbridge/internal/application"
+	"github.com/kumbuka-me/mailbridge/internal/delivery"
+	"github.com/kumbuka-me/mailbridge/internal/flags"
+	"github.com/kumbuka-me/mailbridge/internal/logging"
+	appmetrics "github.com/kumbuka-me/mailbridge/internal/metrics"
+	mailserver "github.com/kumbuka-me/mailbridge/internal/server"
 )
 
 // Run composes and runs the mailbridge process.
-func Run(ctx context.Context, args []string, version, commit string, stdout, stderr io.Writer) error {
+func Run(
+	ctx context.Context,
+	args []string,
+	appFS fs.FS,
+	version, commit string,
+	stdout, stderr io.Writer,
+) error {
 	cfg, err := flags.Parse(args, version)
 	if err != nil {
 		if tinyflags.IsHelpRequested(err) || tinyflags.IsVersionRequested(err) {
@@ -85,19 +92,21 @@ func Run(ctx context.Context, args []string, version, commit string, stdout, std
 	}
 
 	forwarder := application.NewForwarder(sender, cfg.BodyFormat, metricsRegistry)
-	handler := mailserver.New(mailserver.Config{
-		Version:        version,
-		Commit:         commit,
-		BodyFormat:     string(cfg.BodyFormat),
-		SMTPTLS:        string(cfg.SMTPTLS),
-		SMTPRetryCount: cfg.SMTPRetryCount,
-		Forwarder:      forwarder,
-		APIToken:       cfg.APIToken,
-		Logger:         logger.With("component", "server"),
-		AccessLog:      cfg.AccessLog,
-		RateLimit:      cfg.RateLimit,
-		Metrics:        metricsRegistry,
-	})
+	handler := mailserver.New(
+		mailserver.Config{
+			Version:        version,
+			Commit:         commit,
+			Assets:         appFS,
+			BodyFormat:     string(cfg.BodyFormat),
+			SMTPTLS:        string(cfg.SMTPTLS),
+			SMTPRetryCount: cfg.SMTPRetryCount,
+			Forwarder:      forwarder,
+			APIToken:       cfg.APIToken,
+			Logger:         logger.With("component", "server"),
+			AccessLog:      cfg.AccessLog,
+			RateLimit:      cfg.RateLimit,
+			Metrics:        metricsRegistry,
+		})
 
 	ctx, stop := server.SignalContext(ctx)
 	defer stop()

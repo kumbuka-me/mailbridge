@@ -23,6 +23,7 @@ ARG LDFLAGS="-s -w -X main.Version=${VERSION} -X main.Commit=${COMMIT}"
 # Copy the Go source and templates.
 COPY cmd/ cmd/
 COPY internal/ internal/
+COPY web/ web/
 
 # Build the binary.
 # TARGETARCH defaults to the builder architecture for regular Docker builds,

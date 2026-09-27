@@ -4,7 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/containeroo/mailbridge/internal/app"
+	"github.com/kumbuka-me/mailbridge/internal/app"
+	"github.com/kumbuka-me/mailbridge/web"
 )
 
 var (
@@ -12,9 +13,17 @@ var (
 	Commit  = "none"
 )
 
-// main runs mailbridge and exits non-zero on failure.
+// main runs the Kumbuka server and exits non-zero on failure.
 func main() {
-	if err := app.Run(context.Background(), os.Args[1:], Version, Commit, os.Stdout, os.Stderr); err != nil {
+	if err := app.Run(
+		context.Background(),
+		os.Args[1:],
+		web.Assets,
+		Version,
+		Commit,
+		os.Stdout,
+		os.Stderr,
+	); err != nil {
 		os.Exit(1)
 	}
 }

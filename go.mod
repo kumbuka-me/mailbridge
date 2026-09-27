@@ -1,4 +1,4 @@
-module github.com/containeroo/mailbridge
+module github.com/kumbuka-me/mailbridge
 
 go 1.27.0
 

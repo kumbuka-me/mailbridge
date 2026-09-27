@@ -8,8 +8,8 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/containeroo/mailbridge/internal/application"
 	"github.com/containeroo/notifykit/targets/email"
+	"github.com/kumbuka-me/mailbridge/internal/application"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

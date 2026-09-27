@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/containeroo/mailbridge/internal/response"
+	"github.com/kumbuka-me/mailbridge/internal/response"
 )
 
 // RateLimit limits requests to the configured number per second.

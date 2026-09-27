@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mailbridge logo">
+  <title>mailbridge</title>
+  <style>
+    :root { color: #111827; }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #f9fafb; }
+    }
+  </style>
+  <g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="22" width="92" height="60" rx="14"/>
+    <path d="M26 34l38 28 38-28"/>
+    <path d="M23 76l27-24"/>
+    <path d="M105 76L78 52"/>
+    <path d="M34 100c8-10 18-16 30-16s22 6 30 16"/>
+    <path d="M44 100V90"/>
+    <path d="M64 100V86"/>
+    <path d="M84 100V90"/>
+    <path d="M52 44l12 10 12-10"/>
+  </g>
+</svg>

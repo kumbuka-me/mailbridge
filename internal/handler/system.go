@@ -4,7 +4,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/containeroo/mailbridge/internal/response"
+	"github.com/kumbuka-me/mailbridge/internal/response"
 )
 
 // Health reports that the process is ready to accept mail requests.

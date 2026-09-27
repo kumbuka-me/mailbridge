@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/containeroo/mailbridge/internal/response"
+	"github.com/kumbuka-me/mailbridge/internal/response"
 )
 
 // RecoverPanics converts handler panics into logged internal server errors.

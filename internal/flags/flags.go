@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/containeroo/mailbridge/internal/application"
-	"github.com/containeroo/mailbridge/internal/logging"
 	"github.com/containeroo/tinyflags"
+	"github.com/kumbuka-me/mailbridge/internal/application"
+	"github.com/kumbuka-me/mailbridge/internal/logging"
 )
 
 // SMTPTLSMode is the stable mailbridge CLI representation of SMTP TLS behavior.

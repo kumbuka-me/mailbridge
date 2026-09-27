@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/containeroo/mailbridge/internal/application"
-	"github.com/containeroo/mailbridge/internal/response"
+	"github.com/kumbuka-me/mailbridge/internal/application"
+	"github.com/kumbuka-me/mailbridge/internal/response"
 )
 
 const maxRequestBytes = 1 << 20

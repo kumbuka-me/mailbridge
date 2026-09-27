@@ -9,8 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/containeroo/mailbridge/internal/application"
-	appmetrics "github.com/containeroo/mailbridge/internal/metrics"
+	"github.com/kumbuka-me/mailbridge/internal/application"
+	appmetrics "github.com/kumbuka-me/mailbridge/internal/metrics"
+	"github.com/kumbuka-me/mailbridge/web"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,6 +52,18 @@ func TestRoutes(t *testing.T) {
 		handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/unknown", nil))
 
 		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
+	t.Run("serves embedded assets", func(t *testing.T) {
+		t.Parallel()
+		handler, _, _ := newTestServer()
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/assets/favicon.svg", nil))
+
+		assert.Equal(t, http.StatusOK, response.Code)
+		assert.Equal(t, "image/svg+xml", response.Header().Get("Content-Type"))
+		assert.Contains(t, response.Body.String(), "<svg")
 	})
 
 	t.Run("health", func(t *testing.T) {
@@ -128,6 +141,7 @@ func newTestServer() (http.Handler, *forwarderStub, *appmetrics.Registry) {
 	handler := New(Config{
 		Version:        "test",
 		Commit:         "abc123",
+		Assets:         web.Assets,
 		BodyFormat:     "text",
 		SMTPTLS:        "starttls",
 		SMTPRetryCount: 3,
