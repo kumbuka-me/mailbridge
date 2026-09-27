@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="mailbridge is a small HTTP-to-SMTP bridge."
+    />
+
+    <title>mailbridge</title>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      body {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 48px 24px;
+        line-height: 1.55;
+      }
+
+      h1,
+      h2 {
+        line-height: 1.2;
+      }
+
+      h2 {
+        margin-top: 40px;
+      }
+
+      a {
+        color: inherit;
+        text-underline-offset: 3px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+      }
+
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+      }
+
+      .version {
+        padding: 2px 7px;
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        border-radius: 999px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.8rem;
+      }
+
+      code,
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      code {
+        font-size: 0.92em;
+      }
+
+      p code {
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+        background: color-mix(in srgb, currentColor 8%, transparent);
+        white-space: nowrap;
+      }
+
+      .code-block {
+        position: relative;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 16px;
+        padding-right: 82px;
+        border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        border-radius: 8px;
+        line-height: 1.45;
+      }
+
+      .copy-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+        padding: 5px 9px;
+        border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+        border-radius: 6px;
+        color: inherit;
+        background: Canvas;
+        font: inherit;
+        font-size: 0.78rem;
+        line-height: 1.2;
+        cursor: pointer;
+      }
+
+      .copy-button:hover {
+        background: color-mix(in srgb, currentColor 8%, Canvas);
+      }
+
+      .copy-button:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid
+          color-mix(in srgb, currentColor 18%, transparent);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        font-weight: 600;
+      }
+
+      footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 48px;
+        padding-top: 20px;
+        border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+        font-size: 0.9rem;
+      }
+
+      .separator {
+        opacity: 0.45;
+      }
+
+      @media (max-width: 560px) {
+        body {
+          padding: 32px 18px;
+        }
+
+        th,
+        td {
+          padding-left: 6px;
+          padding-right: 6px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <header>
+        <h1 class="brand">
+          <svg
+            class="brand-mark"
+            viewBox="0 0 64 64"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="8" y="14" width="48" height="36" rx="5" />
+            <path d="m11 19 21 17 21-17" />
+          </svg>
+
+          mailbridge
+        </h1>
+
+        <p>
+          A small HTTP-to-SMTP bridge that accepts one JSON email request and
+          forwards it through the configured SMTP server.
+        </p>
+      </header>
+
+      <h2>API</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Path</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>GET</code></td>
+            <td><code>/</code></td>
+            <td>This page</td>
+          </tr>
+
+          <tr>
+            <td><code>POST</code></td>
+            <td><code>/mail</code></td>
+            <td>Forward one email message</td>
+          </tr>
+
+          <tr>
+            <td><code>GET</code></td>
+            <td>
+              <a href="/healthz"><code>/healthz</code></a>
+            </td>
+            <td>Liveness check</td>
+          </tr>
+
+          <tr>
+            <td><code>GET</code></td>
+            <td>
+              <a href="/readyz"><code>/readyz</code></a>
+            </td>
+            <td>Readiness check</td>
+          </tr>
+
+          <tr>
+            <td><code>GET</code></td>
+            <td>
+              <a href="/version"><code>/version</code></a>
+            </td>
+            <td>Build version</td>
+          </tr>
+
+          <tr>
+            <td><code>GET</code></td>
+            <td>
+              <a href="/metrics"><code>/metrics</code></a>
+            </td>
+            <td>Prometheus metrics</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Send an email</h2>
+
+      <p>
+        <code>POST /mail</code> requires bearer authentication and a JSON body
+        describing exactly one email message.
+      </p>
+
+      <div class="code-block">
+        <button
+          class="copy-button"
+          type="button"
+          aria-label="Copy curl command"
+        >
+          Copy
+        </button>
+
+        <pre><code>curl --fail-with-body \
+  --request POST \
+  --url http://localhost:8080/mail \
+  --header 'Authorization: Bearer &lt;token&gt;' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "recipients": {
+      "to": [{"email": "alice@example.com"}],
+      "cc": [],
+      "bcc": []
+    },
+    "message": {
+      "subject": "mailbridge test",
+      "body": "Hello from mailbridge"
+    }
+  }'</code></pre>
+      </div>
+
+      <h2>Effective configuration</h2>
+
+      <p>
+        Only non-sensitive effective settings are shown here. SMTP addresses,
+        credentials, sender addresses, and API tokens are intentionally omitted.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Setting</th>
+            <th>Effective value</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Authentication</td>
+            <td>required</td>
+          </tr>
+
+          <tr>
+            <td>Default body format</td>
+            <td><code>{{.BodyFormat}}</code></td>
+          </tr>
+
+          <tr>
+            <td>SMTP TLS</td>
+            <td><code>{{.SMTPTLS}}</code></td>
+          </tr>
+
+          <tr>
+            <td>SMTP retries</td>
+            <td><code>{{.SMTPRetryCount}}</code></td>
+          </tr>
+
+          <tr>
+            <td>Rate limit</td>
+            <td><code>{{.RateLimitStatus}}</code></td>
+          </tr>
+
+          <tr>
+            <td>Access log</td>
+            <td><code>{{.AccessLogStatus}}</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Configuration reference</h2>
+
+      <p>
+        Every CLI flag can also be configured through an environment variable.
+        Convert the flag name to uppercase, replace <code>-</code> with
+        <code>_</code>, and prefix it with <code>MAILBRIDGE__</code>.
+      </p>
+
+      <p>
+        For example, <code>--smtp-retry-count</code> becomes
+        <code>MAILBRIDGE__SMTP_RETRY_COUNT</code>, and
+        <code>--body-format</code> becomes
+        <code>MAILBRIDGE__BODY_FORMAT</code>.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Flag</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>--listen-address</code></td>
+            <td><code>127.0.0.1:8080</code></td>
+            <td>HTTP listen address.</td>
+          </tr>
+
+          <tr>
+            <td><code>--api-token</code></td>
+            <td>required</td>
+            <td>Bearer token required by <code>POST /mail</code>.</td>
+          </tr>
+
+          <tr>
+            <td><code>--rate-limit</code></td>
+            <td><code>0</code></td>
+            <td>
+              Maximum mail requests per second; <code>0</code> disables rate
+              limiting.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-address</code></td>
+            <td>required</td>
+            <td>SMTP server as <code>HOST:PORT</code>.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-from</code></td>
+            <td>required</td>
+            <td>Sender mailbox; a display name is allowed.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-username</code></td>
+            <td>empty</td>
+            <td>SMTP username.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-password</code></td>
+            <td>empty</td>
+            <td>SMTP password.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-tls</code></td>
+            <td><code>starttls</code></td>
+            <td>
+              <code>starttls</code>, <code>tls</code>, or <code>none</code>.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-insecure-skip-verify</code></td>
+            <td><code>false</code></td>
+            <td>Disable SMTP TLS certificate verification.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-timeout</code></td>
+            <td><code>30s</code></td>
+            <td>Timeout for each SMTP delivery attempt.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-retry-count</code></td>
+            <td><code>3</code></td>
+            <td>Retries after the initial SMTP attempt.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-retry-backoff</code></td>
+            <td><code>1s</code></td>
+            <td>Delay before the first SMTP retry.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-retry-max-backoff</code></td>
+            <td><code>30s</code></td>
+            <td>Maximum local exponential retry backoff.</td>
+          </tr>
+
+          <tr>
+            <td><code>--smtp-retry-jitter</code></td>
+            <td><code>true</code></td>
+            <td>Apply full jitter to retry delays.</td>
+          </tr>
+
+          <tr>
+            <td><code>--body-format</code></td>
+            <td><code>text</code></td>
+            <td>
+              Default email body format: <code>text</code> or
+              <code>html</code>.
+            </td>
+          </tr>
+
+          <tr>
+            <td><code>--log-format</code></td>
+            <td><code>json</code></td>
+            <td><code>json</code> or <code>text</code>.</td>
+          </tr>
+
+          <tr>
+            <td><code>--debug</code></td>
+            <td><code>false</code></td>
+            <td>Enable debug logging, including retry waits.</td>
+          </tr>
+
+          <tr>
+            <td><code>--access-log</code></td>
+            <td><code>false</code></td>
+            <td>Log HTTP requests.</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+
+    <footer>
+      <span class="version">{{.Version}}</span>
+      <span class="separator">·</span>
+      <code>{{.Commit}}</code>
+      <span class="separator">·</span>
+
+      <a
+        href="https://github.com/kumbuka-me/mailbridge"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
+    </footer>
+
+    <script>
+      for (const button of document.querySelectorAll(".copy-button")) {
+        button.addEventListener("click", async () => {
+          const code = button.parentElement.querySelector("code").textContent;
+
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch {
+            const textarea = document.createElement("textarea");
+            textarea.value = code;
+            textarea.setAttribute("readonly", "");
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            textarea.remove();
+          }
+
+          button.textContent = "Copied";
+
+          window.setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1200);
+        });
+      }
+    </script>
+  </body>
+</html>

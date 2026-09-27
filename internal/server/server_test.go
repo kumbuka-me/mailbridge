@@ -29,6 +29,30 @@ func (s *forwarderStub) Forward(_ context.Context, request application.Request) 
 func TestRoutes(t *testing.T) {
 	t.Parallel()
 
+	t.Run("home", func(t *testing.T) {
+		t.Parallel()
+		handler, _, _ := newTestServer()
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/", nil))
+
+		assert.Equal(t, http.StatusOK, response.Code)
+		assert.Equal(t, "text/html; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Contains(t, response.Body.String(), "mailbridge")
+		assert.Contains(t, response.Body.String(), "test")
+		assert.Contains(t, response.Body.String(), "abc123")
+	})
+
+	t.Run("home does not catch unknown paths", func(t *testing.T) {
+		t.Parallel()
+		handler, _, _ := newTestServer()
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/unknown", nil))
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	})
+
 	t.Run("health", func(t *testing.T) {
 		t.Parallel()
 		handler, _, _ := newTestServer()
@@ -102,10 +126,15 @@ func newTestServer() (http.Handler, *forwarderStub, *appmetrics.Registry) {
 	metrics := appmetrics.NewRegistry("test", "abc123")
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	handler := New(Config{
-		Forwarder: forwarder,
-		APIToken:  "secret",
-		Logger:    logger,
-		Metrics:   metrics,
+		Version:        "test",
+		Commit:         "abc123",
+		BodyFormat:     "text",
+		SMTPTLS:        "starttls",
+		SMTPRetryCount: 3,
+		Forwarder:      forwarder,
+		APIToken:       "secret",
+		Logger:         logger,
+		Metrics:        metrics,
 	})
 	return handler, forwarder, metrics
 }

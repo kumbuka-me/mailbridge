@@ -32,6 +32,12 @@ If an application wants to send separate emails to multiple people, it should ca
 
 ## API
 
+### `GET /`
+
+The unauthenticated home page provides a small human-readable overview of the service, its HTTP endpoints, a copyable `curl` example, and non-sensitive effective runtime settings. The page template is embedded in the mailbridge binary.
+
+Sensitive values such as the API token, SMTP address, SMTP credentials, sender address, and proxy address are never displayed.
+
 ### `POST /mail`
 
 The request must use bearer authentication:
@@ -89,6 +95,14 @@ The health endpoint is unauthenticated and returns `200 OK`:
 { "status": "ok" }
 ```
 
+### `GET /readyz`
+
+The readiness endpoint is unauthenticated and returns `200 OK` with the same response shape as `/healthz`.
+
+### `GET /version`
+
+The version endpoint is unauthenticated and returns the running build version.
+
 ### `GET /metrics`
 
 The Prometheus endpoint is unauthenticated and returns metrics in the Prometheus text exposition format. mailbridge uses a private registry, so only its explicitly registered application, Go runtime, and process collectors are exposed.
@@ -106,7 +120,7 @@ mailbridge exposes these application metrics in addition to the standard Go runt
 | `mailbridge_email_delivery_errors_total`     | counter   | Email delivery operations that finished with an error. |
 | `mailbridge_email_delivery_duration_seconds` | histogram | Complete email delivery operation duration.            |
 
-Only `POST /mail` is instrumented at the HTTP layer. Infrastructure endpoints such as `/metrics`, `/healthz`, `/readyz`, and `/version` do not contribute to mail request metrics. Delivery metrics are recorded only after request validation succeeds and the SMTP delivery operation is attempted.
+Only `POST /mail` is instrumented at the HTTP layer. Infrastructure endpoints such as `/`, `/metrics`, `/healthz`, `/readyz`, and `/version` do not contribute to mail request metrics. Delivery metrics are recorded only after request validation succeeds and the SMTP delivery operation is attempted.
 
 ## Email semantics
 

@@ -3,7 +3,6 @@ package flags
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"net/mail"
 	"strings"
@@ -142,16 +141,16 @@ func Parse(args []string, version string) (Config, error) {
 		"Disable SMTP TLS certificate verification",
 	).Value()
 	tf.DurationVar(&cfg.SMTPTimeout, "smtp-timeout", 30*time.Second, "Timeout for each SMTP delivery attempt").
-		Validate(positiveDuration("smtp timeout")).
+		Validate(tinyflags.Positive[time.Duration]()).
 		Value()
 	tf.IntVar(&cfg.SMTPRetryCount, "smtp-retry-count", 3, "Number of SMTP retries after the initial attempt").
-		Validate(nonNegativeInt("smtp retry count")).
+		Validate(tinyflags.NonNegative[int]()).
 		Value()
 	tf.DurationVar(&cfg.SMTPRetryBackoff, "smtp-retry-backoff", time.Second, "Delay before the first SMTP retry").
-		Validate(nonNegativeDuration("smtp retry backoff")).
+		Validate(tinyflags.NonNegative[time.Duration]()).
 		Value()
 	tf.DurationVar(&cfg.SMTPRetryMaxBackoff, "smtp-retry-max-backoff", 30*time.Second, "Maximum local SMTP retry backoff").
-		Validate(nonNegativeDuration("smtp retry max backoff")).
+		Validate(tinyflags.NonNegative[time.Duration]()).
 		Value()
 	tf.BoolVar(&cfg.SMTPRetryJitter, "smtp-retry-jitter", true, "Apply full jitter to SMTP retry delays").Value()
 	bodyFormat := tinyflags.Enum(
@@ -179,7 +178,7 @@ func Parse(args []string, version string) (Config, error) {
 	tf.BoolVar(&cfg.Debug, "debug", false, "Enable verbose diagnostic logging").Short("d").Value()
 	tf.BoolVar(&cfg.AccessLog, "access-log", false, "Enable HTTP request access logging").Value()
 	tf.IntVar(&cfg.RateLimit, "rate-limit", 0, "Maximum mail requests per second; zero disables rate limiting").
-		Validate(nonNegativeInt("rate limit")).
+		Validate(tinyflags.NonNegative[int]()).
 		Value()
 
 	if err := tf.Parse(args); err != nil {
@@ -193,34 +192,4 @@ func Parse(args []string, version string) (Config, error) {
 	cfg.Overrides = tf.OverriddenValues()
 
 	return cfg, nil
-}
-
-// positiveDuration validates a duration that must be greater than zero.
-func positiveDuration(name string) func(time.Duration) error {
-	return func(value time.Duration) error {
-		if value <= 0 {
-			return fmt.Errorf("%s must be greater than zero", name)
-		}
-		return nil
-	}
-}
-
-// nonNegativeDuration validates a duration that may be zero but not negative.
-func nonNegativeDuration(name string) func(time.Duration) error {
-	return func(value time.Duration) error {
-		if value < 0 {
-			return fmt.Errorf("%s must not be negative", name)
-		}
-		return nil
-	}
-}
-
-// nonNegativeInt validates an integer that may be zero but not negative.
-func nonNegativeInt(name string) func(int) error {
-	return func(value int) error {
-		if value < 0 {
-			return fmt.Errorf("%s must not be negative", name)
-		}
-		return nil
-	}
 }

@@ -14,6 +14,14 @@ import (
 type Config struct {
 	// Version is the running build version.
 	Version string
+	// Commit is the running build commit.
+	Commit string
+	// BodyFormat is the default email body format shown on the home page.
+	BodyFormat string
+	// SMTPTLS is the SMTP TLS mode shown on the home page.
+	SMTPTLS string
+	// SMTPRetryCount is the number of retries after the initial SMTP attempt.
+	SMTPRetryCount int
 	// Forwarder handles decoded mail requests.
 	Forwarder handler.Forwarder
 	// APIToken authenticates incoming mail requests.

@@ -86,13 +86,17 @@ func Run(ctx context.Context, args []string, version, commit string, stdout, std
 
 	forwarder := application.NewForwarder(sender, cfg.BodyFormat, metricsRegistry)
 	handler := mailserver.New(mailserver.Config{
-		Version:   version,
-		Forwarder: forwarder,
-		APIToken:  cfg.APIToken,
-		Logger:    logger.With("component", "server"),
-		AccessLog: cfg.AccessLog,
-		RateLimit: cfg.RateLimit,
-		Metrics:   metricsRegistry,
+		Version:        version,
+		Commit:         commit,
+		BodyFormat:     string(cfg.BodyFormat),
+		SMTPTLS:        string(cfg.SMTPTLS),
+		SMTPRetryCount: cfg.SMTPRetryCount,
+		Forwarder:      forwarder,
+		APIToken:       cfg.APIToken,
+		Logger:         logger.With("component", "server"),
+		AccessLog:      cfg.AccessLog,
+		RateLimit:      cfg.RateLimit,
+		Metrics:        metricsRegistry,
 	})
 
 	ctx, stop := server.SignalContext(ctx)

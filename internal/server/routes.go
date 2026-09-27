@@ -9,6 +9,15 @@ import (
 
 // addRoutes registers mailbridge's complete HTTP surface.
 func addRoutes(mux *http.ServeMux, config Config) {
+	mux.Handle("GET /{$}", handler.Home(handler.HomeConfig{
+		Version:        config.Version,
+		Commit:         config.Commit,
+		BodyFormat:     config.BodyFormat,
+		SMTPTLS:        config.SMTPTLS,
+		SMTPRetryCount: config.SMTPRetryCount,
+		RateLimit:      config.RateLimit,
+		AccessLog:      config.AccessLog,
+	}))
 	mux.Handle("GET /metrics", config.Metrics.Metrics())
 	mux.Handle("GET /healthz", handler.Health())
 	mux.Handle("POST /healthz", handler.Health())
