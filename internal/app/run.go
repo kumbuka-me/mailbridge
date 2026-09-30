@@ -49,7 +49,7 @@ func Run(
 		setupLogger.Info(
 			"CLI Overrides",
 			"event", "cli_overrides",
-			"overrides", cfg.Overrides,
+			"overrides", cfg.Overrides.Values(),
 		)
 	}
 

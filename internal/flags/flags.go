@@ -64,7 +64,7 @@ type Config struct {
 	// RateLimit is the maximum number of mail requests accepted per second; zero disables limiting.
 	RateLimit int
 	// Overrides records values explicitly overridden through flags or environment variables.
-	Overrides map[string]any
+	Overrides tinyflags.Overrides
 }
 
 // Parse parses command-line arguments into application configuration.
@@ -189,7 +189,7 @@ func Parse(args []string, version string) (Config, error) {
 	cfg.SMTPTLS = *tlsMode
 	cfg.BodyFormat = *bodyFormat
 	cfg.LogFormat = *logFormat
-	cfg.Overrides = tf.OverriddenValues()
+	cfg.Overrides = tf.Overrides()
 
 	return cfg, nil
 }
