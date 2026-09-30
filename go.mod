@@ -3,7 +3,7 @@ module github.com/kumbuka-me/mailbridge
 go 1.27.0
 
 require (
-	github.com/containeroo/httpgrace v0.2.0
+	github.com/containeroo/httpgrace v0.2.1
 	github.com/containeroo/notifykit v0.7.0
 	github.com/containeroo/tinyflags v0.2.0
 	github.com/prometheus/client_golang v1.24.1
@@ -19,7 +19,7 @@ require (
 	github.com/prometheus/common v0.70.1 // indirect
 	github.com/prometheus/procfs v0.21.1 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
