@@ -20,7 +20,7 @@ func TestStatusWriterInformationalResponse(t *testing.T) {
 	defer server.Close()
 	response, err := server.Client().Get(server.URL)
 	require.NoError(t, err)
-	defer response.Body.Close()
+	defer func() { require.NoError(t, response.Body.Close()) }()
 	require.Equal(t, http.StatusAccepted, response.StatusCode)
 	require.Equal(t, http.StatusAccepted, <-finalStatus)
 }
