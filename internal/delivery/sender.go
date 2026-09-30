@@ -144,8 +144,10 @@ func (n emailNotification) ID() string {
 // Data exposes the already-rendered application message to Notifykit's templates.
 func (n emailNotification) Data(_ string, _ map[string]any, _ string) any {
 	return struct {
+		// Subject is the application subject supplied to the transport template.
 		Subject string
-		Body    string
+		// Body is the application-rendered message body supplied to the transport template.
+		Body string
 	}{
 		Subject: n.message.Subject,
 		Body:    n.message.Body,

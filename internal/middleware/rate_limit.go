@@ -33,11 +33,16 @@ func RateLimit(requestsPerSecond int) Middleware {
 
 // tokenBucket implements a concurrency-safe token bucket rate limiter.
 type tokenBucket struct {
-	mu       sync.Mutex
-	rate     float64
+	// mu serializes token consumption and replenishment.
+	mu sync.Mutex
+	// rate is the number of tokens replenished per second.
+	rate float64
+	// capacity bounds the burst size.
 	capacity float64
-	tokens   float64
-	last     time.Time
+	// tokens is the currently available request allowance.
+	tokens float64
+	// last is the timestamp of the most recent replenishment.
+	last time.Time
 }
 
 // newTokenBucket creates a full token bucket for the configured requests-per-second rate.

@@ -34,8 +34,11 @@ type HomeConfig struct {
 
 // homeView contains presentation-ready values for the embedded home page.
 type homeView struct {
+	// HomeConfig supplies the configured service information.
 	HomeConfig
+	// RateLimitStatus describes whether request throttling is enabled.
 	RateLimitStatus string
+	// AccessLogStatus describes whether HTTP access logging is enabled.
 	AccessLogStatus string
 }
 
