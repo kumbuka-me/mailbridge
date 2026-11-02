@@ -7,7 +7,7 @@ import (
 	"io"
 	"io/fs"
 
-	"github.com/containeroo/httpgrace/server"
+	server "github.com/containeroo/httpkit/grace"
 	"github.com/containeroo/notifykit/notify"
 	"github.com/containeroo/notifykit/targets/email"
 	"github.com/containeroo/tinyflags"
