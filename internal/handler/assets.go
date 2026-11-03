@@ -31,8 +31,6 @@ func Assets(assets fs.FS) http.Handler {
 		}
 
 		request := r.Clone(r.Context())
-		url := *r.URL
-		request.URL = &url
 		request.URL.Path = "/" + name
 
 		w.Header().Set("Cache-Control", "public, max-age=3600")
