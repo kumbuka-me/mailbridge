@@ -148,6 +148,9 @@ func ValidateRequest(request Request) error {
 	if strings.TrimSpace(request.Message.Subject) == "" {
 		return invalidRequest("message subject is required")
 	}
+	if strings.ContainsAny(request.Message.Subject, "\r\n") {
+		return invalidRequest("message subject must be a single line")
+	}
 	if strings.TrimSpace(request.Message.Body) == "" {
 		return invalidRequest("message body is required")
 	}

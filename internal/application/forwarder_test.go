@@ -163,6 +163,7 @@ func TestValidateRequest(t *testing.T) {
 			request.Recipients.BCC = []Recipient{{Email: "bad"}}
 		}},
 		{name: "invalid display name", mutate: func(request *Request) { request.Recipients.To[0].DisplayName = "Alice\nBcc: bad@example.com" }},
+		{name: "multiline subject", mutate: func(request *Request) { request.Message.Subject = "Update\r\nBcc: other@example.com" }},
 		{name: "missing subject", mutate: func(request *Request) { request.Message.Subject = " " }},
 		{name: "missing body", mutate: func(request *Request) { request.Message.Body = " " }},
 		{name: "unsupported body format", mutate: func(request *Request) { request.Message.BodyFormat = "markdown" }},
