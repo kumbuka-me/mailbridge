@@ -3,7 +3,7 @@ module github.com/kumbuka-me/mailbridge
 go 1.27.0
 
 require (
-	github.com/containeroo/httpkit v0.0.3
+	github.com/containeroo/httpkit v0.1.1
 	github.com/containeroo/notifykit v0.7.0
 	github.com/containeroo/tinyflags v0.8.0
 	github.com/prometheus/client_golang v1.25.0
