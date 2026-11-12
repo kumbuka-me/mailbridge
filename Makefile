@@ -9,7 +9,7 @@ GOLANGCI_LINT_VERSION ?= v2.15.0
 DEV_TOOLS_VERSION ?= v0.9.0
 
 # renovate: datasource=npm depName=prettier
-PRETTIER_VERSION ?= 3.10.0
+PRETTIER_VERSION ?= 3.10.1
 
 
 ## Shared Development Tools
