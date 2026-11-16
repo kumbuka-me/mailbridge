@@ -17,9 +17,6 @@ spec:
         - name: mailbridge
           image: ghcr.io/kumbuka-me/mailbridge:latest
           imagePullPolicy: IfNotPresent
-          env:
-            - name: MAILBRIDGE__LISTEN_ADDRESS
-              value: "0.0.0.0:8080"
           envFrom:
             - secretRef:
                 name: mailbridge-config

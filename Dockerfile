@@ -51,7 +51,9 @@ COPY --from=prep /workspace/mailbridge /mailbridge
 COPY --from=prep /outfs/app /app
 COPY --from=prep /outfs/tmp /tmp
 
-ENV HOME=/tmp
+ENV HOME=/tmp \
+  MAILBRIDGE__LISTEN_ADDRESS=:8080
+
 
 WORKDIR /app
 
