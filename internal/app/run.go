@@ -12,8 +12,8 @@ import (
 	"github.com/containeroo/notifykit/targets/email"
 	"github.com/containeroo/tinyflags"
 	"github.com/kumbuka-me/mailbridge/internal/application"
+	"github.com/kumbuka-me/mailbridge/internal/cli"
 	"github.com/kumbuka-me/mailbridge/internal/delivery"
-	"github.com/kumbuka-me/mailbridge/internal/flags"
 	"github.com/kumbuka-me/mailbridge/internal/logging"
 	appmetrics "github.com/kumbuka-me/mailbridge/internal/metrics"
 	mailserver "github.com/kumbuka-me/mailbridge/internal/server"
@@ -27,7 +27,7 @@ func Run(
 	version, commit string,
 	stdout, stderr io.Writer,
 ) error {
-	cfg, err := flags.Parse(args, version)
+	flags, err := cli.Parse(args, version)
 	if err != nil {
 		if tinyflags.IsHelpRequested(err) || tinyflags.IsVersionRequested(err) {
 			fmt.Fprint(stdout, err.Error()) // nolint:errcheck
@@ -37,7 +37,7 @@ func Run(
 		return err
 	}
 
-	logger := logging.Setup(cfg.LogFormat, cfg.Debug, stdout)
+	logger := logging.Setup(flags.LogFormat, flags.Debug, stdout)
 	setupLogger := logger.With("component", "setup")
 	setupLogger.Info(
 		"starting mailbridge",
@@ -45,11 +45,11 @@ func Run(
 		"version", version,
 		"commit", commit,
 	)
-	if len(cfg.Overrides) > 0 {
+	if len(flags.Overrides) > 0 {
 		setupLogger.Info(
 			"CLI Overrides",
 			"event", "cli_overrides",
-			"overrides", cfg.Overrides.Values(),
+			"overrides", flags.Overrides.Values(),
 		)
 	}
 
@@ -57,19 +57,19 @@ func Run(
 
 	sender, err := delivery.New(
 		delivery.Config{
-			Address:              cfg.SMTPAddress,
-			From:                 cfg.SMTPFrom,
-			Username:             cfg.SMTPUsername,
-			Password:             cfg.SMTPPassword,
-			TLS:                  notifykitTLSMode(cfg.SMTPTLS),
-			InsecureSkipVerify:   cfg.SMTPInsecureSkipVerify,
-			Timeout:              cfg.SMTPTimeout,
+			Address:              flags.SMTPAddress,
+			From:                 flags.SMTPFrom,
+			Username:             flags.SMTPUsername,
+			Password:             flags.SMTPPassword,
+			TLS:                  notifykitTLSMode(flags.SMTPTLS),
+			InsecureSkipVerify:   flags.SMTPInsecureSkipVerify,
+			Timeout:              flags.SMTPTimeout,
 			ProxyFromEnvironment: true,
 			Retry: notify.RetryConfig{
-				Count:      cfg.SMTPRetryCount,
-				Backoff:    cfg.SMTPRetryBackoff,
-				MaxBackoff: cfg.SMTPRetryMaxBackoff,
-				Jitter:     cfg.SMTPRetryJitter,
+				Count:      flags.SMTPRetryCount,
+				Backoff:    flags.SMTPRetryBackoff,
+				MaxBackoff: flags.SMTPRetryMaxBackoff,
+				Jitter:     flags.SMTPRetryJitter,
 				Policy:     notify.DefaultRetryPolicy,
 			},
 			Logger: logger.With("component", "notifykit"),
@@ -91,20 +91,20 @@ func Run(
 		)
 	}
 
-	forwarder := application.NewForwarder(sender, cfg.BodyFormat, metricsRegistry)
+	forwarder := application.NewForwarder(sender, flags.BodyFormat, metricsRegistry)
 	handler := mailserver.New(
 		mailserver.Config{
 			Version:        version,
 			Commit:         commit,
 			Assets:         appFS,
-			BodyFormat:     string(cfg.BodyFormat),
-			SMTPTLS:        string(cfg.SMTPTLS),
-			SMTPRetryCount: cfg.SMTPRetryCount,
+			BodyFormat:     string(flags.BodyFormat),
+			SMTPTLS:        string(flags.SMTPTLS),
+			SMTPRetryCount: flags.SMTPRetryCount,
 			Forwarder:      forwarder,
-			APIToken:       cfg.APIToken,
+			APIToken:       flags.APIToken,
 			Logger:         logger.With("component", "server"),
-			AccessLog:      cfg.AccessLog,
-			RateLimit:      cfg.RateLimit,
+			AccessLog:      flags.AccessLog,
+			RateLimit:      flags.RateLimit,
 			Metrics:        metricsRegistry,
 		})
 
@@ -113,7 +113,7 @@ func Run(
 
 	if err := server.Run(
 		ctx,
-		cfg.ListenAddress,
+		flags.ListenAddress,
 		handler,
 		logger.With("component", "server"),
 		server.WithMaxHeaderValueCount(100),
@@ -126,11 +126,11 @@ func Run(
 }
 
 // notifykitTLSMode maps stable mailbridge CLI values to Notifykit SMTP modes.
-func notifykitTLSMode(mode flags.SMTPTLSMode) email.TLSMode {
+func notifykitTLSMode(mode cli.SMTPTLSMode) email.TLSMode {
 	switch mode {
-	case flags.SMTPTLSTLS:
+	case cli.SMTPTLSTLS:
 		return email.TLSImplicit
-	case flags.SMTPTLSNone:
+	case cli.SMTPTLSNone:
 		return email.TLSPlaintext
 	default:
 		return email.TLSRequired

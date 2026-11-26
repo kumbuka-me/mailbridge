@@ -1,6 +1,8 @@
-package flags
+package cli
 
 import (
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -8,6 +10,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// TestMain isolates CLI tests from deployment settings inherited from the shell.
+// Environment-specific tests set their own values with t.Setenv.
+func TestMain(m *testing.M) {
+	for _, entry := range os.Environ() {
+		name, _, _ := strings.Cut(entry, "=")
+		if strings.HasPrefix(name, "MAILBRIDGE_") {
+			if err := os.Unsetenv(name); err != nil {
+				panic(err)
+			}
+		}
+	}
+	os.Exit(m.Run())
+}
 
 func TestParse(t *testing.T) {
 	t.Parallel()

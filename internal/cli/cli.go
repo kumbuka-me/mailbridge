@@ -1,5 +1,5 @@
 // Package flags parses deployment-level configuration for mailbridge.
-package flags
+package cli
 
 import (
 	"errors"
@@ -25,8 +25,8 @@ const (
 	SMTPTLSNone SMTPTLSMode = "none"
 )
 
-// Config contains deployment-level runtime configuration.
-type Config struct {
+// Flags contains deployment-level runtime configuration.
+type Flags struct {
 	// ListenAddress is the TCP address used by the HTTP server.
 	ListenAddress string
 	// APIToken authenticates incoming mail requests.
@@ -68,8 +68,7 @@ type Config struct {
 }
 
 // Parse parses command-line arguments into application configuration.
-func Parse(args []string, version string) (Config, error) {
-	cfg := Config{}
+func Parse(args []string, version string) (flags Flags, err error) {
 	tf := tinyflags.NewFlagSet("mailbridge", tinyflags.ContinueOnError)
 	tf.EnvPrefix("MAILBRIDGE_")
 	tf.Version(version)
@@ -83,12 +82,12 @@ func Parse(args []string, version string) (Config, error) {
 		Placeholder("ADDR").
 		Value()
 
-	tf.StringVar(&cfg.APIToken, "api-token", "", "Bearer token required for incoming mail requests").
+	tf.StringVar(&flags.APIToken, "api-token", "", "Bearer token required for incoming mail requests").
 		Required().
 		Placeholder("TOKEN").
 		OverriddenValueMaskFn(tinyflags.MaskFirstLast).
 		Value()
-	tf.StringVar(&cfg.SMTPAddress, "smtp-address", "", "SMTP server address in HOST:PORT form").
+	tf.StringVar(&flags.SMTPAddress, "smtp-address", "", "SMTP server address in HOST:PORT form").
 		Required().
 		Validate(func(s string) error {
 			if _, _, err := net.SplitHostPort(s); err != nil {
@@ -101,7 +100,7 @@ func Parse(args []string, version string) (Config, error) {
 		}).
 		Placeholder("HOST:PORT").
 		Value()
-	tf.StringVar(&cfg.SMTPFrom, "smtp-from", "", "Sender email address").
+	tf.StringVar(&flags.SMTPFrom, "smtp-from", "", "Sender email address").
 		Required().
 		Validate(func(s string) error {
 			from := strings.TrimSpace(s)
@@ -116,10 +115,10 @@ func Parse(args []string, version string) (Config, error) {
 		}).
 		Placeholder("EMAIL").
 		Value()
-	tf.StringVar(&cfg.SMTPUsername, "smtp-username", "", "SMTP authentication username").
+	tf.StringVar(&flags.SMTPUsername, "smtp-username", "", "SMTP authentication username").
 		AllOrNone("smtp-auth").
 		Value()
-	tf.StringVar(&cfg.SMTPPassword, "smtp-password", "", "SMTP authentication password").
+	tf.StringVar(&flags.SMTPPassword, "smtp-password", "", "SMTP authentication password").
 		OverriddenValueMaskFn(tinyflags.MaskFirstLast).
 		AllOrNone("smtp-auth").
 		Value()
@@ -135,24 +134,24 @@ func Parse(args []string, version string) (Config, error) {
 		Placeholder("MODE").
 		Value()
 	tf.BoolVar(
-		&cfg.SMTPInsecureSkipVerify,
+		&flags.SMTPInsecureSkipVerify,
 		"smtp-insecure-skip-verify",
 		false,
 		"Disable SMTP TLS certificate verification",
 	).Value()
-	tf.DurationVar(&cfg.SMTPTimeout, "smtp-timeout", 30*time.Second, "Timeout for each SMTP delivery attempt").
+	tf.DurationVar(&flags.SMTPTimeout, "smtp-timeout", 30*time.Second, "Timeout for each SMTP delivery attempt").
 		Validate(tinyflags.Positive[time.Duration]()).
 		Value()
-	tf.IntVar(&cfg.SMTPRetryCount, "smtp-retry-count", 3, "Number of SMTP retries after the initial attempt").
+	tf.IntVar(&flags.SMTPRetryCount, "smtp-retry-count", 3, "Number of SMTP retries after the initial attempt").
 		Validate(tinyflags.NonNegative[int]()).
 		Value()
-	tf.DurationVar(&cfg.SMTPRetryBackoff, "smtp-retry-backoff", time.Second, "Delay before the first SMTP retry").
+	tf.DurationVar(&flags.SMTPRetryBackoff, "smtp-retry-backoff", time.Second, "Delay before the first SMTP retry").
 		Validate(tinyflags.NonNegative[time.Duration]()).
 		Value()
-	tf.DurationVar(&cfg.SMTPRetryMaxBackoff, "smtp-retry-max-backoff", 30*time.Second, "Maximum local SMTP retry backoff").
+	tf.DurationVar(&flags.SMTPRetryMaxBackoff, "smtp-retry-max-backoff", 30*time.Second, "Maximum local SMTP retry backoff").
 		Validate(tinyflags.NonNegative[time.Duration]()).
 		Value()
-	tf.BoolVar(&cfg.SMTPRetryJitter, "smtp-retry-jitter", true, "Apply full jitter to SMTP retry delays").Value()
+	tf.BoolVar(&flags.SMTPRetryJitter, "smtp-retry-jitter", true, "Apply full jitter to SMTP retry delays").Value()
 	bodyFormat := tinyflags.Enum(
 		tf,
 		"body-format",
@@ -175,21 +174,21 @@ func Parse(args []string, version string) (Config, error) {
 		Short("l").
 		Placeholder("FORMAT").
 		Value()
-	tf.BoolVar(&cfg.Debug, "debug", false, "Enable verbose diagnostic logging").Short("d").Value()
-	tf.BoolVar(&cfg.AccessLog, "access-log", false, "Enable HTTP request access logging").Value()
-	tf.IntVar(&cfg.RateLimit, "rate-limit", 0, "Maximum mail requests per second; zero disables rate limiting").
+	tf.BoolVar(&flags.Debug, "debug", false, "Enable verbose diagnostic logging").Short("d").Value()
+	tf.BoolVar(&flags.AccessLog, "access-log", false, "Enable HTTP request access logging").Value()
+	tf.IntVar(&flags.RateLimit, "rate-limit", 0, "Maximum mail requests per second; zero disables rate limiting").
 		Validate(tinyflags.NonNegative[int]()).
 		Value()
 
 	if err := tf.Parse(args); err != nil {
-		return Config{}, err
+		return Flags{}, err
 	}
 
-	cfg.ListenAddress = (*listen).String()
-	cfg.SMTPTLS = *tlsMode
-	cfg.BodyFormat = *bodyFormat
-	cfg.LogFormat = *logFormat
-	cfg.Overrides = tf.Overrides()
+	flags.ListenAddress = (*listen).String()
+	flags.SMTPTLS = *tlsMode
+	flags.BodyFormat = *bodyFormat
+	flags.LogFormat = *logFormat
+	flags.Overrides = tf.Overrides()
 
-	return cfg, nil
+	return flags, nil
 }

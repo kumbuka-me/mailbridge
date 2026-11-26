@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/containeroo/notifykit/targets/email"
-	"github.com/kumbuka-me/mailbridge/internal/flags"
+	"github.com/kumbuka-me/mailbridge/internal/cli"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +12,7 @@ import (
 func TestNotifykitTLSMode(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, email.TLSRequired, notifykitTLSMode(flags.SMTPTLSStartTLS))
-	assert.Equal(t, email.TLSImplicit, notifykitTLSMode(flags.SMTPTLSTLS))
-	assert.Equal(t, email.TLSPlaintext, notifykitTLSMode(flags.SMTPTLSNone))
+	assert.Equal(t, email.TLSRequired, notifykitTLSMode(cli.SMTPTLSStartTLS))
+	assert.Equal(t, email.TLSImplicit, notifykitTLSMode(cli.SMTPTLSTLS))
+	assert.Equal(t, email.TLSPlaintext, notifykitTLSMode(cli.SMTPTLSNone))
 }
